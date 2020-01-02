@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netcoreapp3.1</TargetFramework>
+        <PackageId>EntityFrameworkBatchExtensions</PackageId>
+        <Version>1.0.0</Version>
+        <Authors>Alexey Rudi</Authors>
+        <PackageTags>EF Batch Performance</PackageTags>
+    </PropertyGroup>
+
+</Project>
