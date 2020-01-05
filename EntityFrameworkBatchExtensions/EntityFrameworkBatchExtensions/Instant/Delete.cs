@@ -21,10 +21,11 @@ namespace EntityFrameworkBatchExtensions.Instant
             foreach (var batch in batches) {
                 // TODO: Move to SQLQueryBuilder (or at least consider)
                 // TODO: Figure out how to return DeletedIds after SQL Execution
+                var joinedIds = string.Join(", ", batch);
                 var sql = $@"
                     DELETE FROM {set.GetTableName()}
                     OUTPUT Deleted.Id
-                    WHERE Id IN({string.Join(", ", batch)});
+                    WHERE Id IN({joinedIds});
                 ";
                 ctx.Database.ExecuteSqlRaw(sql);
             }
@@ -40,10 +41,11 @@ namespace EntityFrameworkBatchExtensions.Instant
             foreach (var batch in batches) {
                 // TODO: Move to SQLQueryBuilder (or at least consider)
                 // TODO: Figure out how to return DeletedIds after SQL Execution
+                var joinedIds = string.Join(", ", batch);
                 var sql = $@"
                     DELETE FROM {set.GetTableName()}
                     OUTPUT Deleted.Id
-                    WHERE Id IN({string.Join(", ", batch)});
+                    WHERE Id IN({joinedIds});
                 ";
                 await ctx.Database.ExecuteSqlRawAsync(sql);
             }
