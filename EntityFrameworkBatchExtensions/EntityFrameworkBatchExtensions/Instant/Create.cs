@@ -18,17 +18,17 @@ namespace EntityFrameworkBatchExtensions.Instant
 
             var props = typeof(T).GetProperties();
             var propNames = props.Select(p => p.Name);
-            var joinedProps = string.Join(", ", propNames);
+            var joinedPropNames = string.Join(", ", propNames);
                 
-            var batches = objs.Batches(BatchSize);
+            var objBatches = objs.Batches(BatchSize);
             var ctx = set.GetDbContext();
-            foreach (var batch in batches) {
+            foreach (var objBatch in objBatches) {
                 // TODO: Move to SQLQueryBuilder (or at least consider)
                 // TODO: Figure out how to return DeletedIds after SQL Execution
-                var objWrappedVals = batch.Select(obj => $"({string.Join(", ", props.Select(p => p.GetValue(obj)))})");
+                var objWrappedVals = objBatch.Select(obj => $"({string.Join(", ", props.Select(p => p.GetValue(obj)))})");
                 var joinedValues = string.Join(", ", objWrappedVals);
                 var sql = $@"
-                    INSERT INTO {set.GetTableName()} ({joinedProps})
+                    INSERT INTO {set.GetTableName()} ({joinedPropNames})
                     VALUES {joinedValues}
                     OUTPUT Inserted.Id;
                 ";
