@@ -6,6 +6,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EntityFrameworkBatchExtensions.Instant
 {
+    // TODO: Write Tests
+    // TODO: Write Docs
     public static class Create
     {
         // TODO: Add appropriate batch size assertion mechanism
@@ -23,15 +25,9 @@ namespace EntityFrameworkBatchExtensions.Instant
             var objBatches = objs.Batches(BatchSize);
             var ctx = set.GetDbContext();
             foreach (var objBatch in objBatches) {
-                // TODO: Move to SQLQueryBuilder (or at least consider)
-                // TODO: Figure out how to return DeletedIds after SQL Execution
                 var objWrappedVals = objBatch.Select(obj => $"({string.Join(", ", props.Select(p => p.GetValue(obj)))})");
                 var joinedValues = string.Join(", ", objWrappedVals);
-                var sql = $@"
-                    INSERT INTO {set.GetTableName()} ({joinedPropNames})
-                    VALUES {joinedValues}
-                    OUTPUT Inserted.Id;
-                ";
+                var sql = SqlQueryBuilder.BuildCreateQuery(set.GetTableName(), joinedPropNames, joinedValues);
                 ctx.Database.ExecuteSqlRaw(sql);
             }
         }
@@ -43,20 +39,14 @@ namespace EntityFrameworkBatchExtensions.Instant
 
             var props = typeof(T).GetProperties();
             var propNames = props.Select(p => p.Name);
-            var joinedProps = string.Join(", ", propNames);
+            var joinedPropNames = string.Join(", ", propNames);
                 
-            var batches = objs.Batches(BatchSize);
+            var objBatches = objs.Batches(BatchSize);
             var ctx = set.GetDbContext();
-            foreach (var batch in batches) {
-                // TODO: Move to SQLQueryBuilder (or at least consider)
-                // TODO: Figure out how to return DeletedIds after SQL Execution
-                var objWrappedVals = batch.Select(obj => $"({string.Join(", ", props.Select(p => p.GetValue(obj)))})");
+            foreach (var objBatch in objBatches) {
+                var objWrappedVals = objBatch.Select(obj => $"({string.Join(", ", props.Select(p => p.GetValue(obj)))})");
                 var joinedValues = string.Join(", ", objWrappedVals);
-                var sql = $@"
-                    INSERT INTO {set.GetTableName()} ({joinedProps})
-                    VALUES {joinedValues}
-                    OUTPUT Inserted.Id;
-                ";
+                var sql = SqlQueryBuilder.BuildCreateQuery(set.GetTableName(), joinedPropNames, joinedValues);
                 await ctx.Database.ExecuteSqlRawAsync(sql);
             }
         }

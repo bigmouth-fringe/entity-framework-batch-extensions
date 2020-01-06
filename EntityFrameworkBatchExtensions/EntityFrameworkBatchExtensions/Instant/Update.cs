@@ -6,6 +6,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EntityFrameworkBatchExtensions.Instant
 {
+    // TODO: Write Tests
+    // TODO: Write Docs
     public static class Update
     {
         // TODO: Add appropriate batch size assertion mechanism
@@ -23,15 +25,8 @@ namespace EntityFrameworkBatchExtensions.Instant
             var idBatches = ids.Batches(BatchSize);
             var ctx = set.GetDbContext();
             foreach (var idBatch in idBatches) {
-                // TODO: Move to SQLQueryBuilder (or at least consider)
-                // TODO: Figure out how to return DeletedIds after SQL Execution
                 var joinedIds = string.Join(", ", idBatch);
-                var sql = $@"
-                    UPDATE {set.GetTableName()}
-                    SET {joinedPropSetters}
-                    OUTPUT Updated.Id
-                    WHERE Id IS IN({joinedIds});
-                ";
+                var sql = SqlQueryBuilder.BuildUpdateQuery(set.GetTableName(), joinedPropSetters, joinedIds);
                 ctx.Database.ExecuteSqlRaw(sql);
             }
         }
@@ -48,15 +43,8 @@ namespace EntityFrameworkBatchExtensions.Instant
             var idBatches = ids.Batches(BatchSize);
             var ctx = set.GetDbContext();
             foreach (var idBatch in idBatches) {
-                // TODO: Move to SQLQueryBuilder (or at least consider)
-                // TODO: Figure out how to return DeletedIds after SQL Execution
                 var joinedIds = string.Join(", ", idBatch);
-                var sql = $@"
-                    UPDATE {set.GetTableName()}
-                    SET {joinedPropSetters}
-                    OUTPUT Updated.Id
-                    WHERE Id IS IN({joinedIds});
-                ";
+                var sql = SqlQueryBuilder.BuildUpdateQuery(set.GetTableName(), joinedPropSetters, joinedIds);
                 await ctx.Database.ExecuteSqlRawAsync(sql);
             }
         }
