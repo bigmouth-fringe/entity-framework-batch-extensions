@@ -1,7 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using EntityFrameworkBatchExtensions.Helpers;
+using EntityFrameworkBatchExtensions.Internal;
+using EntityFrameworkBatchExtensions.Internal.Helpers;
 using Microsoft.EntityFrameworkCore;
 
 namespace EntityFrameworkBatchExtensions.Instant
@@ -17,16 +18,10 @@ namespace EntityFrameworkBatchExtensions.Instant
             this DbSet<T> set, List<TK> ids, T obj
         ) where T : class {
             if (obj == null || ids.Count < 1) return;
-            
-            var props = typeof(T).GetProperties();
-            var propSetters = props.Select(p => $"{p.Name} = {p.GetValue(obj)}");
-            var joinedPropSetters = string.Join(", ", propSetters);
-            
             var idBatches = ids.Batches(BatchSize);
             var ctx = set.GetDbContext();
             foreach (var idBatch in idBatches) {
-                var joinedIds = string.Join(", ", idBatch);
-                var sql = SqlQueryBuilder.BuildUpdateQuery(set.GetTableName(), joinedPropSetters, joinedIds);
+                var sql = SqlQueryBuilder.BuildUpdateQuery(set, idBatch.ToList(), obj);
                 ctx.Database.ExecuteSqlRaw(sql);
             }
         }
@@ -35,16 +30,10 @@ namespace EntityFrameworkBatchExtensions.Instant
             this DbSet<T> set, List<TK> ids, T obj
         ) where T : class {
             if (obj == null || ids.Count < 1) return;
-            
-            var props = typeof(T).GetProperties();
-            var propSetters = props.Select(p => $"{p.Name} = {p.GetValue(obj)}");
-            var joinedPropSetters = string.Join(", ", propSetters);
-            
             var idBatches = ids.Batches(BatchSize);
             var ctx = set.GetDbContext();
             foreach (var idBatch in idBatches) {
-                var joinedIds = string.Join(", ", idBatch);
-                var sql = SqlQueryBuilder.BuildUpdateQuery(set.GetTableName(), joinedPropSetters, joinedIds);
+                var sql = SqlQueryBuilder.BuildUpdateQuery(set, idBatch.ToList(), obj);
                 await ctx.Database.ExecuteSqlRawAsync(sql);
             }
         }

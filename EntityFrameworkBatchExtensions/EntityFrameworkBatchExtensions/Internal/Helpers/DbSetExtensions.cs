@@ -3,7 +3,7 @@ using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 
-namespace EntityFrameworkBatchExtensions.Helpers
+namespace EntityFrameworkBatchExtensions.Internal.Helpers
 {
     public static class DbSetExtensions
     {

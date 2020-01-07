@@ -1,7 +1,9 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using EntityFrameworkBatchExtensions.Helpers;
+using EntityFrameworkBatchExtensions.Internal;
+using EntityFrameworkBatchExtensions.Internal.Helpers;
 using Microsoft.EntityFrameworkCore;
 
 namespace EntityFrameworkBatchExtensions.Instant
@@ -16,18 +18,13 @@ namespace EntityFrameworkBatchExtensions.Instant
         public static void BatchCreate<T>(
             this DbSet<T> set, List<T> objs
         ) where T : class {
+            // TODO: Test
             if (objs.Count < 1) return;
-
-            var props = typeof(T).GetProperties();
-            var propNames = props.Select(p => p.Name);
-            var joinedPropNames = string.Join(", ", propNames);
-                
             var objBatches = objs.Batches(BatchSize);
             var ctx = set.GetDbContext();
             foreach (var objBatch in objBatches) {
-                var objWrappedVals = objBatch.Select(obj => $"({string.Join(", ", props.Select(p => p.GetValue(obj)))})");
-                var joinedValues = string.Join(", ", objWrappedVals);
-                var sql = SqlQueryBuilder.BuildCreateQuery(set.GetTableName(), joinedPropNames, joinedValues);
+                var sql = SqlQueryBuilder.BuildCreateQuery(set, objBatch.ToList());
+                // TODO: Test
                 ctx.Database.ExecuteSqlRaw(sql);
             }
         }
@@ -35,18 +32,13 @@ namespace EntityFrameworkBatchExtensions.Instant
         public static async Task BatchCreateAsync<T>(
             this DbSet<T> set, List<T> objs
         ) where T : class {
+            // TODO: Test
             if (objs.Count < 1) return;
-
-            var props = typeof(T).GetProperties();
-            var propNames = props.Select(p => p.Name);
-            var joinedPropNames = string.Join(", ", propNames);
-                
             var objBatches = objs.Batches(BatchSize);
             var ctx = set.GetDbContext();
             foreach (var objBatch in objBatches) {
-                var objWrappedVals = objBatch.Select(obj => $"({string.Join(", ", props.Select(p => p.GetValue(obj)))})");
-                var joinedValues = string.Join(", ", objWrappedVals);
-                var sql = SqlQueryBuilder.BuildCreateQuery(set.GetTableName(), joinedPropNames, joinedValues);
+                var sql = SqlQueryBuilder.BuildCreateQuery(set, objBatch.ToList());
+                // TODO: Test
                 await ctx.Database.ExecuteSqlRawAsync(sql);
             }
         }

@@ -1,6 +1,8 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
-using EntityFrameworkBatchExtensions.Helpers;
+using EntityFrameworkBatchExtensions.Internal;
+using EntityFrameworkBatchExtensions.Internal.Helpers;
 using Microsoft.EntityFrameworkCore;
 
 namespace EntityFrameworkBatchExtensions.Instant
@@ -16,12 +18,10 @@ namespace EntityFrameworkBatchExtensions.Instant
             this DbSet<T> set, List<TK> ids
         ) where T : class {
             if (ids.Count < 1) return;
-
             var idBatches = ids.Batches(BatchSize);
             var ctx = set.GetDbContext();
             foreach (var idBatch in idBatches) {
-                var joinedIds = string.Join(", ", idBatch);
-                var sql = SqlQueryBuilder.BuildDeleteQuery(set.GetTableName(), joinedIds);
+                var sql = SqlQueryBuilder.BuildDeleteQuery(set, idBatch.ToList());
                 ctx.Database.ExecuteSqlRaw(sql);
             }
         }
@@ -30,12 +30,10 @@ namespace EntityFrameworkBatchExtensions.Instant
             this DbSet<T> set, List<TK> ids
         ) where T : class {
             if (ids.Count < 1) return;
-
             var idBatches = ids.Batches(BatchSize);
             var ctx = set.GetDbContext();
             foreach (var idBatch in idBatches) {
-                var joinedIds = string.Join(", ", idBatch);
-                var sql = SqlQueryBuilder.BuildDeleteQuery(set.GetTableName(), joinedIds);
+                var sql = SqlQueryBuilder.BuildDeleteQuery(set, idBatch.ToList());
                 await ctx.Database.ExecuteSqlRawAsync(sql);
             }
         }

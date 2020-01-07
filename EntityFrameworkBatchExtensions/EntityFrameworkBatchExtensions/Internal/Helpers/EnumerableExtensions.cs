@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace EntityFrameworkBatchExtensions.Helpers
+namespace EntityFrameworkBatchExtensions.Internal.Helpers
 {
     public static class EnumerableExtensions
     {
