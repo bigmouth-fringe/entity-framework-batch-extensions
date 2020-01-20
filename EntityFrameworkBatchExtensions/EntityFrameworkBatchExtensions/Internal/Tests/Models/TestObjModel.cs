@@ -2,7 +2,7 @@ using System;
 
 namespace EntityFrameworkBatchExtensions.Internal.Tests.Models
 {
-    internal class TestObjModel
+    public class TestObjModel
     {
         public long Id { get; set; }
 

@@ -10,6 +10,7 @@
 
     <ItemGroup>
       <Folder Include="Deferred" />
+      <Folder Include="Internal\Tests\Instant" />
     </ItemGroup>
 
     <ItemGroup>

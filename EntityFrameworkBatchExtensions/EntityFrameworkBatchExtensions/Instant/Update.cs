@@ -18,10 +18,16 @@ namespace EntityFrameworkBatchExtensions.Instant
             this DbSet<T> set, List<TK> ids, T obj
         ) where T : class {
             if (obj == null || ids.Count < 1) return;
-            var idBatches = ids.Batches(BatchSize);
+            
             var ctx = set.GetDbContext();
+            var entityType = ctx.Model.FindEntityType(typeof(T));
+            var props = entityType.GetProperties().Select(p => p.PropertyInfo);
+            
+            var idBatches = ids.Batches(BatchSize);
             foreach (var idBatch in idBatches) {
-                var sql = SqlQueryBuilder.BuildUpdateQuery(set, idBatch.ToList(), obj);
+                var sql = SqlQueryBuilder.BuildUpdateQuery(
+                    set.GetTableName(), idBatch.ToList(), props.ToList(), obj
+                );
                 ctx.Database.ExecuteSqlRaw(sql);
             }
         }
@@ -30,10 +36,16 @@ namespace EntityFrameworkBatchExtensions.Instant
             this DbSet<T> set, List<TK> ids, T obj
         ) where T : class {
             if (obj == null || ids.Count < 1) return;
-            var idBatches = ids.Batches(BatchSize);
+            
             var ctx = set.GetDbContext();
+            var entityType = ctx.Model.FindEntityType(typeof(T));
+            var props = entityType.GetProperties().Select(p => p.PropertyInfo);
+            
+            var idBatches = ids.Batches(BatchSize);
             foreach (var idBatch in idBatches) {
-                var sql = SqlQueryBuilder.BuildUpdateQuery(set, idBatch.ToList(), obj);
+                var sql = SqlQueryBuilder.BuildUpdateQuery(
+                    set.GetTableName(), idBatch.ToList(), props.ToList(), obj
+                );
                 await ctx.Database.ExecuteSqlRawAsync(sql);
             }
         }

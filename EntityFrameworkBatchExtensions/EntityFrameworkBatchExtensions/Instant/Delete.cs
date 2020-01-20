@@ -21,7 +21,9 @@ namespace EntityFrameworkBatchExtensions.Instant
             var idBatches = ids.Batches(BatchSize);
             var ctx = set.GetDbContext();
             foreach (var idBatch in idBatches) {
-                var sql = SqlQueryBuilder.BuildDeleteQuery(set, idBatch.ToList());
+                var sql = SqlQueryBuilder.BuildDeleteQuery(
+                    set.GetTableName(), idBatch.ToList()
+                );
                 ctx.Database.ExecuteSqlRaw(sql);
             }
         }
@@ -33,7 +35,9 @@ namespace EntityFrameworkBatchExtensions.Instant
             var idBatches = ids.Batches(BatchSize);
             var ctx = set.GetDbContext();
             foreach (var idBatch in idBatches) {
-                var sql = SqlQueryBuilder.BuildDeleteQuery(set, idBatch.ToList());
+                var sql = SqlQueryBuilder.BuildDeleteQuery(
+                    set.GetTableName(), idBatch.ToList()
+                );
                 await ctx.Database.ExecuteSqlRawAsync(sql);
             }
         }

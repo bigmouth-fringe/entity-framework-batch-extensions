@@ -1,59 +1,66 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using EntityFrameworkBatchExtensions.Internal.Helpers;
-using Microsoft.EntityFrameworkCore;
+using System.Reflection;
 
 namespace EntityFrameworkBatchExtensions.Internal
 {
     // TODO: Write Tests
-    // TODO: Make sure strings wrapped in single quotes
+    // NOTE: This builder is not aware of props correspondence to the actual columns
     internal static class SqlQueryBuilder
     {
-        internal static string BuildCreateQuery<T>(
-            DbSet<T> set, List<T> objs
+        public static string BuildCreateQuery<T>(
+            string tableName, List<PropertyInfo> props, List<T> objs
         ) where T : class {
             // TODO: Test
-            var props = typeof(T).GetProperties();
             var propNames = props.Select(p => p.Name);
             var joinedPropNames = string.Join(", ", propNames);
             
             // TODO: Test
-            var objWrappedVals = objs.Select(obj => $"({string.Join(", ", props.Select(p => p.GetValue(obj)))})");
+            var objWrappedVals = objs.Select(obj => $"({string.Join(", ", props.Select(p => MapPropValue(p, obj)))})");
             var joinedValues = string.Join(", ", objWrappedVals);
             
             return $@"
-                INSERT INTO {set.GetTableName()} ({joinedPropNames})
+                INSERT INTO {tableName} ({joinedPropNames})
                 VALUES {joinedValues}
                 OUTPUT Inserted.Id;
-            ";
+            ".Trim();
         }
         
-        internal static string BuildUpdateQuery<T, TK>(
-            DbSet<T> set, List<TK> ids, T obj
+        public static string BuildUpdateQuery<T, TK>(
+            string tableName, List<TK> ids, List<PropertyInfo> props, T obj
         ) where T : class {
             // TODO: Test
-            var props = typeof(T).GetProperties();
-            var propSetters = props.Select(p => $"{p.Name} = {p.GetValue(obj)}");
+            var propSetters = props.Select(p => $"{p.Name} = {MapPropValue(p, obj)}");
             var joinedPropSetters = string.Join(", ", propSetters);
             var joinedIds = string.Join(", ", ids);
             return $@"
-                UPDATE {set.GetTableName()}
+                UPDATE {tableName}
                 SET {joinedPropSetters}
                 OUTPUT Updated.Id
                 WHERE Id IN({joinedIds});
-            ";
+            ".Trim();
         }
         
-        internal static string BuildDeleteQuery<T, TK>(
-            DbSet<T> set, List<TK> ids
-        ) where T : class {
+        public static string BuildDeleteQuery<TK>(string tableName, List<TK> ids) 
+        {
             // TODO: Test
             var joinedIds = string.Join(", ", ids);
             return $@"
-                DELETE FROM {set.GetTableName()}
+                DELETE FROM {tableName}
                 OUTPUT Deleted.Id
                 WHERE Id IN({joinedIds});
-            ";
+            ".Trim();
+        }
+
+        private static object MapPropValue(PropertyInfo prop, object obj)
+        {
+            switch (Type.GetTypeCode(prop.PropertyType)) { 
+                case TypeCode.String:
+                case TypeCode.DateTime:
+                    return $"'{prop.GetValue(obj)}'";
+                default: return prop.GetValue(obj);
+            }
         }
     }
 }

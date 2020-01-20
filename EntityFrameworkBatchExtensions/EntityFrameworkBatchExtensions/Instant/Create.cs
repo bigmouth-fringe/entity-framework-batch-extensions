@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -20,10 +19,16 @@ namespace EntityFrameworkBatchExtensions.Instant
         ) where T : class {
             // TODO: Test
             if (objs.Count < 1) return;
-            var objBatches = objs.Batches(BatchSize);
+
             var ctx = set.GetDbContext();
+            var entityType = ctx.Model.FindEntityType(typeof(T));
+            var props = entityType.GetProperties().Select(p => p.PropertyInfo);
+
+            var objBatches = objs.Batches(BatchSize);
             foreach (var objBatch in objBatches) {
-                var sql = SqlQueryBuilder.BuildCreateQuery(set, objBatch.ToList());
+                var sql = SqlQueryBuilder.BuildCreateQuery(
+                    set.GetTableName(), props.ToList(), objBatch.ToList()
+                );
                 // TODO: Test
                 ctx.Database.ExecuteSqlRaw(sql);
             }
@@ -34,10 +39,16 @@ namespace EntityFrameworkBatchExtensions.Instant
         ) where T : class {
             // TODO: Test
             if (objs.Count < 1) return;
-            var objBatches = objs.Batches(BatchSize);
+            
             var ctx = set.GetDbContext();
+            var entityType = ctx.Model.FindEntityType(typeof(T));
+            var props = entityType.GetProperties().Select(p => p.PropertyInfo);
+            
+            var objBatches = objs.Batches(BatchSize);
             foreach (var objBatch in objBatches) {
-                var sql = SqlQueryBuilder.BuildCreateQuery(set, objBatch.ToList());
+                var sql = SqlQueryBuilder.BuildCreateQuery(
+                    set.GetTableName(), props.ToList(), objBatch.ToList()
+                );
                 // TODO: Test
                 await ctx.Database.ExecuteSqlRawAsync(sql);
             }
